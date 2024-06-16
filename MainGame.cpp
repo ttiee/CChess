@@ -3,6 +3,8 @@
 
 void MainGame::InitGame()
 {
-	Axes axes;
+	axes = new Axes();
 	this->axes = axes;
+	axes->clear();
+	status = PLAYING;
 }

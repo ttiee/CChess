@@ -47,10 +47,12 @@ void Chess::show(CDC* pDC)
 	CBitmap* pOldBmp = dc.SelectObject(&bmp_mask);
 	BITMAP bmpInfo;
 	bmp_mask.GetBitmap(&bmpInfo);
-	pDC->BitBlt(x * GridWidth + Window_x - chess_size / 2, y * GridWidth + Window_y - chess_size / 2, chess_size, chess_size, &dc, 0, 0, SRCAND);
+	CPoint point{x, y};
+	point = Axes::TransToScreen(point);
+	pDC->BitBlt(point.x - chess_size / 2, point.y - chess_size / 2, chess_size, chess_size, &dc, 0, 0, SRCAND);
 	dc.SelectObject(&bmp_chess);
 	bmp_chess.GetBitmap(&bmpInfo);
-	pDC->BitBlt(x * GridWidth + Window_x - chess_size / 2, y * GridWidth + Window_y - chess_size / 2, chess_size, chess_size, &dc, 0, 0, SRCPAINT);
+	pDC->BitBlt(point.x - chess_size / 2, point.y - chess_size / 2, chess_size, chess_size, &dc, 0, 0, SRCPAINT);
 	dc.SelectObject(pOldBmp);
 	bmp_mask.DeleteObject();
 	bmp_chess.DeleteObject();

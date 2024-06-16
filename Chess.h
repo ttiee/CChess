@@ -1,11 +1,11 @@
 #pragma once
-#include "Axes.h"
 
 class Chess
 {
 public:
 	enum COLOR
 	{
+		NONE,
 		WHITE,
 		BLACK
 	};

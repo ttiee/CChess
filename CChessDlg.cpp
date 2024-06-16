@@ -73,6 +73,7 @@ BEGIN_MESSAGE_MAP(CCChessDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_LBUTTONUP()
+	ON_WM_ERASEBKGND() // 擦除背景
 END_MESSAGE_MAP()
 
 
@@ -93,7 +94,8 @@ BOOL CCChessDlg::OnInitDialog()
 	SetWindowText(_T("CChess"));
 
 	// 初始化游戏
-	this->game = game;
+	//this->game = game;
+	this->game = MainGame();
 	this->game.InitGame();
 
 
@@ -163,25 +165,63 @@ void CCChessDlg::OnPaint()
 	}
 	else
 	{
-		CBitmap bmp_bk;
-		bmp_bk.LoadBitmap(IDB_BITMAP_BK_B); //加载位图资源
-		CDC dc;
-		dc.CreateCompatibleDC(NULL); //创建兼容DC
-		CBitmap* pOldBmp = dc.SelectObject(&bmp_bk); //将位图选入DC
-		BITMAP bmpInfo;
-		bmp_bk.GetBitmap(&bmpInfo);
+		// 创建内存 DC
+		CClientDC clientDC(this);
 		CRect rect;
 		GetClientRect(&rect);
-		CDC* pDC = GetDC();
-		pDC->StretchBlt(0, 0, rect.Width(), rect.Height(), &dc, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, SRCCOPY);
-		dc.SelectObject(pOldBmp);
+
+		// 创建内存 DC 和兼容位图
+		CDC memDC;
+		memDC.CreateCompatibleDC(&clientDC);
+		CBitmap memBitmap;
+		memBitmap.CreateCompatibleBitmap(&clientDC, rect.Width(), rect.Height());
+		CBitmap* oldBitmap = memDC.SelectObject(&memBitmap);
+
+		// 用背景色填充内存 DC
+		memDC.FillSolidRect(&rect, RGB(255, 255, 255));
+
+		// 绘制背景
+		CBitmap bmp_bk;
+		bmp_bk.LoadBitmap(IDB_BITMAP_BK_B); // 加载位图资源
+		CDC bgDC;
+		bgDC.CreateCompatibleDC(&clientDC);
+		CBitmap* pOldBmp = bgDC.SelectObject(&bmp_bk);
+		BITMAP bmpInfo;
+		bmp_bk.GetBitmap(&bmpInfo);
+		memDC.StretchBlt(0, 0, rect.Width(), rect.Height(), &bgDC, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, SRCCOPY);
+		bgDC.SelectObject(pOldBmp);
 		bmp_bk.DeleteObject();
 
-		this->game.getAxes().show(pDC);
+		if (game.get_gameStatus() == MainGame::PLAYING)
+		{
+			// 画棋盘
+			this->game.getAxes()->show(&memDC, rect);
 
-		ReleaseDC(pDC);
+			// 画棋子
+			this->game.getAxes()->DrawChess(&memDC);
+		}
 
-		CDialogEx::OnPaint();
+		// 画胜利线
+		if (game.get_gameStatus() == MainGame::END)
+		{
+			//char str[100];
+			//sprintf_s(str, "白方胜利！");
+			CFont font;
+			font.CreatePointFont(200, _T("Arial"));
+			CFont* oldFont = memDC.SelectObject(&font);
+			memDC.SetTextColor(RGB(255, 0, 0));
+			memDC.SetBkMode(TRANSPARENT);
+			CRect rect;
+			GetClientRect(&rect);
+			memDC.TextOutW(rect.Width() / 2 - 90, rect.Height() / 2 - 10, _T("白方胜利！"));
+			//memDC.TextOutW(Window_Width / 2 - 50, Window_Height / 2 - 50, CString(str));
+		}
+
+		// 将内存 DC 的内容拷贝到屏幕 DC
+		clientDC.BitBlt(0, 0, rect.Width(), rect.Height(), &memDC, 0, 0, SRCCOPY);
+
+		// 清理
+		memDC.SelectObject(oldBitmap);
 	}
 }
 
@@ -194,22 +234,42 @@ HCURSOR CCChessDlg::OnQueryDragIcon()
 
 void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	CDC* pDC = GetDC();
-	Chess chess;
-	if (!CCChessDlg::game.getAxes().InAxes(point))
+	if (CCChessDlg::game.get_gameStatus() == MainGame::PLAYING)
 	{
-		ReleaseDC(pDC);
-		return;
+		if (!CCChessDlg::game.getAxes()->InAxes(point))
+		{
+			return;
+		}
+		point = Axes::TransToGrid(point);
+		CCChessDlg::game.getAxes()->AddChess(point.x, point.y, Chess::WHITE);
+
+		// 胜利
+		if (CCChessDlg::game.getAxes()->Win(Chess::WHITE))
+		{
+			// 显示胜利信息
+			//AfxMessageBox(_T("白方胜利！"));
+			CCChessDlg::game.set_gameStatus(MainGame::END);
+
+			// 重新开始
+			//CCChessDlg::game.InitGame();
+			//Invalidate();
+		}
 	}
-	point = Axes::TransToGrid(point);
-	chess.Set(Chess::chess_num, point.x, point.y, Chess::WHITE);
-	chess.show(pDC);
-
-
-
-	ReleaseDC(pDC);
 
 	//AfxMessageBox(_T("Hello, World!"));
 
 	CDialogEx::OnLButtonUp(nFlags, point);
+}
+
+
+CRect CCChessDlg::Get_Window_Rect()
+{
+	CRect rect;
+	GetWindowRect(&rect);
+	return rect;
+}
+
+BOOL CCChessDlg::OnEraseBkgnd(CDC* pDC)
+{
+	return TRUE; // 不擦除背景, 以便重绘背景
 }

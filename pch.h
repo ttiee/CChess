@@ -11,5 +11,17 @@
 #include "framework.h"
 //#include <iostream>
 #include <vector>
+//#include <string>
+#include <cmath>
+
+#include "Chess.h"
+#include "Axes.h"
+#include "MainGame.h"
+
+//#include "Chess.h"
+#include "CChess.h"
+#include "CChessDlg.h"
+#include "resource.h"
+#include <vector>
 
 #endif //PCH_H

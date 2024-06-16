@@ -1,18 +1,17 @@
 #pragma once
-#include "Axes.h"
-#include "Chess.h"
-#include "CChess.h"
-//#include "CChessDlg.h"
-#include "resource.h"
-#include <vector>
+
 
 class MainGame
 {
-	Axes axes;
+	Axes* axes;
+	//CCChessDlg m_dlg;
 	std::vector<Chess> chesses;
 public:
-	Axes getAxes() { return axes; }
+	enum gameStatus { MENU, PLAYING, END } status;
+	Axes* getAxes() { return axes; }
 	std::vector<Chess> getChesses() { return chesses; }
+	void set_gameStatus(gameStatus status) { this->status = status; }
+	gameStatus get_gameStatus() { return status; }
 	void InitGame();
 	//MainGame();
 };

@@ -4,30 +4,29 @@
 
 #pragma once
 
-#include "CChess.h"
-#include "Axes.h"
-#include "MainGame.h"
+
 
 // CCChessDlg 对话框
 class CCChessDlg : public CDialogEx
 {
-// 构造
+	// 构造
 public:
 	CCChessDlg(CWnd* pParent = nullptr);	// 标准构造函数
+	CRect Get_Window_Rect();
 	static MainGame game;
 	static int Window_Width; // 窗口宽度
 	static int Window_Height; // 窗口高度
 
-// 对话框数据
+	// 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CCHESS_DIALOG };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
 
-// 实现
+	// 实现
 protected:
 	HICON m_hIcon;
 
@@ -39,4 +38,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	BOOL OnEraseBkgnd(CDC* pDC);
 };
