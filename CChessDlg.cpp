@@ -78,6 +78,8 @@ BEGIN_MESSAGE_MAP(CCChessDlg, CDialogEx)
 	ON_WM_ERASEBKGND() // 擦除背景
 	//ON_BN_CLICKED(IDC_BUTTON1, &CCChessDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDD_BUTTON_REGRET, &CCChessDlg::OnBnClickedButtonRegret)
+	ON_NOTIFY(NM_THEMECHANGED, IDC_COMBO_COLOR, &CCChessDlg::OnNMThemeChangedComboColor)
+	ON_CBN_CLOSEUP(IDC_COMBO_COLOR, &CCChessDlg::OnCbnCloseupComboColor)
 END_MESSAGE_MAP()
 
 
@@ -111,6 +113,58 @@ BOOL CCChessDlg::OnInitDialog()
 	{
 		AfxMessageBox(_T("计时器设置失败！"));
 	}*/
+
+	// 设置combo box
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_COLOR);
+	pComboBox->ResetContent();
+
+	// 按照拼音首字母顺序添加颜色项并设置对应的数据
+	pComboBox->AddString(_T("白色"));    // index 0
+	pComboBox->SetItemData(0, (DWORD_PTR)WHITE);
+
+	pComboBox->AddString(_T("橙色"));    // index 1
+	pComboBox->SetItemData(1, (DWORD_PTR)ORANGE);
+
+	pComboBox->AddString(_T("粉色"));    // index 2
+	pComboBox->SetItemData(2, (DWORD_PTR)PINK);
+
+	pComboBox->AddString(_T("黑色"));    // index 3
+	pComboBox->SetItemData(3, (DWORD_PTR)BLACK);
+
+	pComboBox->AddString(_T("红色"));    // index 4
+	pComboBox->SetItemData(4, (DWORD_PTR)RED);
+
+	pComboBox->AddString(_T("黄色"));    // index 5
+	pComboBox->SetItemData(5, (DWORD_PTR)YELLOW);
+
+	pComboBox->AddString(_T("灰色"));    // index 6
+	pComboBox->SetItemData(6, (DWORD_PTR)GRAY);
+
+	pComboBox->AddString(_T("金色"));    // index 7
+	pComboBox->SetItemData(7, (DWORD_PTR)GOLD);
+
+	pComboBox->AddString(_T("蓝色"));    // index 8
+	pComboBox->SetItemData(8, (DWORD_PTR)BLUE);
+
+	pComboBox->AddString(_T("绿色"));    // index 9
+	pComboBox->SetItemData(9, (DWORD_PTR)GREEN);
+
+	pComboBox->AddString(_T("品红色"));  // index 10
+	pComboBox->SetItemData(10, (DWORD_PTR)MAGENTA);
+
+	pComboBox->AddString(_T("青色"));    // index 11
+	pComboBox->SetItemData(11, (DWORD_PTR)CYAN);
+
+	pComboBox->AddString(_T("银色"));    // index 12
+	pComboBox->SetItemData(12, (DWORD_PTR)SILVER);
+
+	pComboBox->AddString(_T("紫色"));    // index 13
+	pComboBox->SetItemData(13, (DWORD_PTR)PURPLE);
+
+	pComboBox->AddString(_T("棕色"));    // index 14
+	pComboBox->SetItemData(14, (DWORD_PTR)BROWN);
+
+	pComboBox->SetCurSel(3); // 默认选择第一个
 
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
@@ -293,6 +347,8 @@ void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
 		CCChessDlg::game.InitGame();
 		CCChessDlg::game.set_gameStatus(MainGame::PLAYING);
 		CCChessDlg::game.time = 0;
+		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_COLOR);
+		this->game.getAxes()->color = (Axes_color)pComboBox->GetItemData(pComboBox->GetCurSel());
 		Invalidate();
 	}
 
@@ -335,7 +391,7 @@ void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
 				CCChessDlg::game.set_gameStatus(MainGame::END);
 			}
 		}
-		
+
 	}
 	// 强制窗口重绘
 	Invalidate();
@@ -392,4 +448,25 @@ void CCChessDlg::OnBnClickedButtonRegret()
 {
 	this->game.getAxes()->Regret();
 	Invalidate();
+}
+
+
+void CCChessDlg::OnNMThemeChangedComboColor(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	// 切换颜色
+	*pResult = 0;
+}
+
+
+void CCChessDlg::OnCbnCloseupComboColor()
+{
+	// 切换坐标系颜色
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_COLOR);
+	int index = pComboBox->GetCurSel();
+	if (index != CB_ERR)
+	{
+		DWORD_PTR data = pComboBox->GetItemData(index);
+		this->game.getAxes()->color = (Axes_color)data;
+		Invalidate();
+	}
 }

@@ -34,7 +34,57 @@ void Axes::show(CDC* pDC, CRect rect)
 
 void Axes::DrawAxes(CDC* pDC)
 {
-	CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
+	// »­²»Í¬ÑÕÉ«ÆåÅÌ
+	CPen pen;
+	switch (color)
+	{
+	case BLACK:
+		pen.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+		break;
+	case BROWN:
+		pen.CreatePen(PS_SOLID, 1, RGB(165, 42, 42));
+		break;
+	case BLUE:
+		pen.CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
+		break;
+	case RED:
+		pen.CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+		break;
+	case GREEN:
+		pen.CreatePen(PS_SOLID, 1, RGB(0, 255, 0));
+		break;
+	case YELLOW:
+		pen.CreatePen(PS_SOLID, 1, RGB(255, 255, 0));
+		break;
+	case WHITE:
+		pen.CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+		break;
+	case GRAY:
+		pen.CreatePen(PS_SOLID, 1, RGB(128, 128, 128));
+		break;
+	case PINK:
+		pen.CreatePen(PS_SOLID, 1, RGB(255, 192, 203));
+		break;
+	case PURPLE:
+		pen.CreatePen(PS_SOLID, 1, RGB(128, 0, 128));
+		break;
+	case ORANGE:
+		pen.CreatePen(PS_SOLID, 1, RGB(255, 165, 0));
+		break;
+	case CYAN:
+		pen.CreatePen(PS_SOLID, 1, RGB(0, 255, 255));
+		break;
+	case MAGENTA:
+		pen.CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
+		break;
+	case SILVER:
+		pen.CreatePen(PS_SOLID, 1, RGB(192, 192, 192));
+		break;
+	case GOLD:
+		pen.CreatePen(PS_SOLID, 1, RGB(255, 215, 0));
+		break;
+	}
+
 	CPen* pOldPen = pDC->SelectObject(&pen);
 	for (int i = 0; i < GridNum; i++)
 	{

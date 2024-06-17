@@ -1,6 +1,25 @@
 #pragma once
 //#include "CChessDlg.h"
 
+enum Axes_color
+{
+	BLACK,
+	BROWN,
+	BLUE,
+	RED,
+	GREEN,
+	YELLOW,
+	WHITE,
+	GRAY,
+	PINK,
+	PURPLE,
+	ORANGE,
+	CYAN,
+	MAGENTA,
+	SILVER,
+	GOLD,
+};
+
 class Axes
 {
 public:
@@ -12,6 +31,7 @@ public:
 	static int Window_y; // 窗口左上角的坐标
 	static int GridWidth; // 棋盘格子的宽度
 	static int GridNum; // 棋盘格子的数量
+	Axes_color color = Axes_color::BLACK;
 	static Chess::COLOR turn; // 轮到谁下
     std::vector<Chess*> chesses; // 棋子
 	std::vector<std::vector<Chess::COLOR>> chesseboard{ (unsigned int)GridNum, std::vector<Chess::COLOR>(GridNum, Chess::COLOR::NONE) };
