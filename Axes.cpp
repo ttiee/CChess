@@ -139,10 +139,12 @@ bool Axes::AddChess(int x, int y, Chess::COLOR color)
 		this->chesses.push_back(chess);
 		Chess::chess_num++;
 		chesseboard[x][y] = color;
+		SoundManager::PlayDownSound();
 		return true;
 	}
 	else
 	{
+		SoundManager::PlayWrongSound();
 		return false;
 	}
 }

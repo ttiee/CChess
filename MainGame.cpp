@@ -21,3 +21,13 @@ bool MainGame::click_start(CPoint point, CRect rect)
 	}
 	return false;
 }
+
+
+bool MainGame::click_about(CPoint point, CRect rect)
+{
+	if (point.x > rect.Width() / 50 && point.x < rect.Width() / 5 && point.y > rect.Height() * 2 / 21 && point.y < rect.Height() / 7)
+	{
+		return true;
+	}
+	return false;
+}

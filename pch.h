@@ -17,6 +17,7 @@
 #include "Chess.h"
 #include "Axes.h"
 #include "MainGame.h"
+#include "SoundManager.h"
 
 //#include "Chess.h"
 #include "CChess.h"

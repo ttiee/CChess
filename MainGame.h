@@ -15,6 +15,7 @@ public:
 	gameStatus get_gameStatus() { return status; }
 	void InitGame();
 	bool click_start(CPoint point, CRect rect);
+	bool click_about(CPoint point, CRect rect);
 	//MainGame();
 };
 

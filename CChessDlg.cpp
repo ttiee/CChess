@@ -277,20 +277,34 @@ void CCChessDlg::OnPaint()
 			if (this->game.getAxes()->Win(Chess::WHITE))
 			{
 				// 画胜利线
-				CString str = _T("白方胜利！");
+				/*CString str = _T("白方胜利！");
 				memDC.SetTextColor(RGB(0, 0, 0));
 				memDC.SetBkMode(TRANSPARENT);
-				memDC.TextOutW(rect.Width() / 2, rect.Height() / 2, str);
+				memDC.TextOutW(rect.Width() / 2, rect.Height() / 2, str);*/
 				//MessageBox(_T("白方胜利！"));
+				CBitmap bmp_win;
+				bmp_win.LoadBitmap(IDB_BITMAP_WIN);
+				CDC winDC;
+				winDC.CreateCompatibleDC(&clientDC);
+				CBitmap* pOldBmp = winDC.SelectObject(&bmp_win);
+				BITMAP bmpInfo;
+				bmp_win.GetBitmap(&bmpInfo);
+				memDC.StretchBlt(rect.Width() * 0.25 / 1, rect.Height() * 0.1 / 1, rect.Width() / 2, rect.Height() / 2, &winDC, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, SRCCOPY);
+				winDC.SelectObject(pOldBmp);
+				bmp_win.DeleteObject();
 			}
 			else if (this->game.getAxes()->Win(Chess::BLACK))
 			{
-				// 画胜利线
-				CString str = _T("黑方胜利！");
-				memDC.SetTextColor(RGB(0, 0, 0));
-				memDC.SetBkMode(TRANSPARENT);
-				memDC.TextOutW(rect.Width() / 2, rect.Height() / 2, str);
-
+				CBitmap bmp_lose;
+				bmp_lose.LoadBitmap(IDB_BITMAP_LOSE);
+				CDC loseDC;
+				loseDC.CreateCompatibleDC(&clientDC);
+				CBitmap* pOldBmp = loseDC.SelectObject(&bmp_lose);
+				BITMAP bmpInfo;
+				bmp_lose.GetBitmap(&bmpInfo);
+				memDC.StretchBlt(rect.Width() * 0.25 / 1, rect.Height() * 0.1 / 1, rect.Width() / 2, rect.Height() / 2, &loseDC, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, SRCCOPY);
+				loseDC.SelectObject(pOldBmp);
+				bmp_lose.DeleteObject();
 			}
 		}
 
@@ -349,7 +363,16 @@ void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
 		CCChessDlg::game.time = 0;
 		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_COLOR);
 		this->game.getAxes()->color = (Axes_color)pComboBox->GetItemData(pComboBox->GetCurSel());
+		// 强制窗口重绘
 		Invalidate();
+		UpdateWindow();
+		// 播放音乐
+		SoundManager::PlayStartSound();
+	}
+	else if (CCChessDlg::game.click_about(point, rect))
+	{
+		CAboutDlg dlgAbout;
+		dlgAbout.DoModal();
 	}
 
 
@@ -368,6 +391,7 @@ void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
 		if (CCChessDlg::game.getAxes()->Win(Chess::WHITE))
 		{
 			// 显示胜利信息, 询问是否重新开始
+			SoundManager::PlayWinSound();
 			AfxMessageBox(_T("白方胜利！"), MB_OK | MB_ICONINFORMATION);
 
 			CCChessDlg::game.set_gameStatus(MainGame::END);
@@ -387,6 +411,7 @@ void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
 			if (CCChessDlg::game.getAxes()->Win(Chess::BLACK))
 			{
 				// 显示胜利信息, 询问是否重新开始
+				SoundManager::PlayLoseSound();
 				AfxMessageBox(_T("黑方胜利！"), MB_OK | MB_ICONINFORMATION);
 				CCChessDlg::game.set_gameStatus(MainGame::END);
 			}
@@ -448,6 +473,7 @@ void CCChessDlg::OnBnClickedButtonRegret()
 {
 	this->game.getAxes()->Regret();
 	Invalidate();
+	SoundManager::PlayRegretSound();
 }
 
 

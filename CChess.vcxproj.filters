@@ -42,6 +42,9 @@
     <ClInclude Include="MainGame.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CChess.cpp">
@@ -60,6 +63,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MainGame.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,6 +105,12 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="res\bk_b.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\win.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\lose.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

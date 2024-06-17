@@ -191,6 +191,7 @@
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -205,6 +206,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SoundManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CChess.rc" />
@@ -220,7 +222,9 @@
     <Image Include="res\bz.bmp" />
     <Image Include="res\CChess.ico" />
     <Image Include="res\hz.bmp" />
+    <Image Include="res\lose.bmp" />
     <Image Include="res\mask.bmp" />
+    <Image Include="res\win.bmp" />
     <Image Include="五子棋素材\about.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
