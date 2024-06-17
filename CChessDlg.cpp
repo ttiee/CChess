@@ -38,6 +38,8 @@ protected:
 	// 实现
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedButtonSource();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -50,6 +52,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_BN_CLICKED(IDC_BUTTON_SOURCE, &CAboutDlg::OnBnClickedButtonSource)
 END_MESSAGE_MAP()
 
 
@@ -495,4 +498,12 @@ void CCChessDlg::OnCbnCloseupComboColor()
 		this->game.getAxes()->color = (Axes_color)data;
 		Invalidate();
 	}
+}
+
+
+void CAboutDlg::OnBnClickedButtonSource()
+{
+	// 跳转到源代码页面
+	ShellExecute(NULL, _T("open"), _T("https://github.com/ttiee/CChess.git"), NULL, NULL, SW_SHOWNORMAL);
+
 }
