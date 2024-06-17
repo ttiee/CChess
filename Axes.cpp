@@ -10,6 +10,7 @@ int Axes::Window_x = CCChessDlg::Window_Width * 0.25 / 1;
 int Axes::Window_y = CCChessDlg::Window_Height * 0.1 / 1;
 int Axes::GridWidth = CCChessDlg::Window_Height / 23;
 int Axes::GridNum = 15;
+Chess::COLOR Axes::turn = Chess::WHITE;
 
 
 Axes::Axes()
@@ -77,7 +78,7 @@ bool Axes::InAxes(CPoint point)
 	return true;
 }
 
-void Axes::AddChess(int x, int y, Chess::COLOR color)
+bool Axes::AddChess(int x, int y, Chess::COLOR color)
 {
 	//x++;
 	//y++;
@@ -88,9 +89,11 @@ void Axes::AddChess(int x, int y, Chess::COLOR color)
 		this->chesses.push_back(chess);
 		Chess::chess_num++;
 		chesseboard[x][y] = color;
-	} 
+		return true;
+	}
 	else
 	{
+		return false;
 	}
 }
 
@@ -237,3 +240,134 @@ void Axes::clear()
 	this->chesses.clear();
 	Chess::chess_num = 0;
 }
+
+//电脑下棋
+//电脑下棋策略
+//1. 优先级：活4 > 冲4 > 活3 > 冲3 > 活2 > 冲2 > 活1 > 冲1
+// 靠近中心点的位置优先级高
+void Axes::ComputerAddChess()
+{
+	int x = 0, y = 0;
+	float maxScore = -1.0;
+	float score[15][15] = { 0.0 };
+	const int center = GridNum / 2;
+
+	// 棋形评分函数
+	auto evaluateShape = [&](int countBlack, int countWhite, int emptySpaces, bool isCurrent) -> float {
+		if (countWhite == 4) return isCurrent ? 10000.0 : 9000.0; // 阻止白子成五或成五
+		if (countBlack == 4) return isCurrent ? 9000.0 : 8000.0; // 成五
+		if (countWhite == 3 && emptySpaces == 1) return isCurrent ? 800.0 : 700.0; // 阻止白子活四
+		if (countBlack == 3 && emptySpaces == 1) return isCurrent ? 700.0 : 600.0; // 黑子活四
+		if (countWhite == 3 && emptySpaces > 1) return isCurrent ? 600.0 : 500.0; // 阻止白子跳活四
+		if (countBlack == 3 && emptySpaces > 1) return isCurrent ? 500.0 : 400.0; // 黑子跳活四
+		if (countWhite == 2 && emptySpaces == 1) return isCurrent ? 60.0 : 50.0; // 阻止白子活三
+		if (countBlack == 2 && emptySpaces == 1) return isCurrent ? 50.0 : 40.0; // 黑子活三
+		if (countWhite == 2 && emptySpaces > 1) return isCurrent ? 40.0 : 30.0; // 阻止白子跳活三
+		if (countBlack == 2 && emptySpaces > 1) return isCurrent ? 30.0 : 20.0; // 黑子跳活三
+		if (countWhite == 1) return isCurrent ? 10.0 : 5.0; // 阻止白子活二
+		if (countBlack == 1) return isCurrent ? 5.0 : 3.0; // 黑子活二
+
+		return 0.0;
+		};
+
+	// 综合评分函数
+	auto evaluatePosition = [&](int i, int j, bool isCurrent) -> float {
+		float totalScore = 0.0;
+
+		// 评估当前(i, j)点在8个方向上的得分
+		for (int dx = -1; dx <= 1; dx++)
+		{
+			for (int dy = -1; dy <= 1; dy++)
+			{
+				if (dx == 0 && dy == 0) continue;
+
+				int countBlack = 0, countWhite = 0, emptySpaces = 0;
+				for (int k = -4; k <= 4; k++)
+				{
+					int ni = i + k * dx;
+					int nj = j + k * dy;
+
+					if (ni >= 0 && ni < GridNum && nj >= 0 && nj < GridNum)
+					{
+						if (chesseboard[ni][nj] == Chess::BLACK) countBlack++;
+						else if (chesseboard[ni][nj] == Chess::WHITE) countWhite++;
+						else emptySpaces++;
+					}
+				}
+
+				totalScore += evaluateShape(countBlack, countWhite, emptySpaces, isCurrent);
+			}
+		}
+
+		// 根据位置评分，靠近中心位置的优先级更高
+		float distanceToCenter = sqrt((i - center) * (i - center) + (j - center) * (j - center));
+		totalScore += 40.0 / (distanceToCenter + 1);
+
+		return totalScore;
+		};
+
+	// 遍历所有位置，计算每个位置的得分
+	for (int i = 0; i < GridNum; i++)
+	{
+		for (int j = 0; j < GridNum; j++)
+		{
+			if (chesseboard[i][j] != Chess::NONE) continue;
+
+			float currentScore = evaluatePosition(i, j, true);
+			float opponentScore = evaluatePosition(i, j, false);
+
+			score[i][j] = currentScore + opponentScore;
+
+			if (score[i][j] > maxScore)
+			{
+				maxScore = score[i][j];
+				x = i;
+				y = j;
+			}
+		}
+	}
+
+	// 将黑棋落子在得分最高的位置
+	AddChess(x, y, Chess::BLACK);
+	turn = Chess::WHITE;
+}
+
+
+void Axes::Regret()
+{
+	if (chesses.size() >= 2)
+	{
+		chesseboard[chesses[chesses.size() - 1]->GetX()][chesses[chesses.size() - 1]->GetY()] = Chess::NONE;
+		chesseboard[chesses[chesses.size() - 2]->GetX()][chesses[chesses.size() - 2]->GetY()] = Chess::NONE;
+		delete chesses[chesses.size() - 1];
+		delete chesses[chesses.size() - 2];
+		chesses.pop_back();
+		chesses.pop_back();
+		Chess::chess_num -= 2;
+	}
+	else if (chesses.size() == 1)
+	{
+		delete chesses[chesses.size() - 1];
+		chesses.pop_back();
+		Chess::chess_num -= 1;
+		chesseboard[chesses[chesses.size() - 1]->GetX()][chesses[chesses.size() - 1]->GetY()] = Chess::NONE;
+	}
+	else {
+		MessageBox(NULL, _T("无法悔棋"), _T("提示"), MB_OK);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

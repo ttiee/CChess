@@ -72,8 +72,12 @@ BEGIN_MESSAGE_MAP(CCChessDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	// 定时器
+	ON_WM_TIMER()
 	ON_WM_LBUTTONUP()
 	ON_WM_ERASEBKGND() // 擦除背景
+	//ON_BN_CLICKED(IDC_BUTTON1, &CCChessDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDD_BUTTON_REGRET, &CCChessDlg::OnBnClickedButtonRegret)
 END_MESSAGE_MAP()
 
 
@@ -97,6 +101,16 @@ BOOL CCChessDlg::OnInitDialog()
 	//this->game = game;
 	this->game = MainGame();
 	this->game.InitGame();
+
+	// 设置定时器
+	if (!SetTimer(1, 1000, NULL))
+	{
+		AfxMessageBox(_T("计时器设置失败！"));
+	}
+	/*if (!SetTimer(2, 10, NULL))
+	{
+		AfxMessageBox(_T("计时器设置失败！"));
+	}*/
 
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
@@ -123,6 +137,8 @@ BOOL CCChessDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+
+
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -204,24 +220,59 @@ void CCChessDlg::OnPaint()
 		// 画胜利线
 		if (game.get_gameStatus() == MainGame::END)
 		{
-			//char str[100];
-			//sprintf_s(str, "白方胜利！");
-			CFont font;
-			font.CreatePointFont(200, _T("Arial"));
-			CFont* oldFont = memDC.SelectObject(&font);
-			memDC.SetTextColor(RGB(255, 0, 0));
-			memDC.SetBkMode(TRANSPARENT);
-			CRect rect;
-			GetClientRect(&rect);
-			memDC.TextOutW(rect.Width() / 2 - 90, rect.Height() / 2 - 10, _T("白方胜利！"));
-			//memDC.TextOutW(Window_Width / 2 - 50, Window_Height / 2 - 50, CString(str));
+			if (this->game.getAxes()->Win(Chess::WHITE))
+			{
+				// 画胜利线
+				CString str = _T("白方胜利！");
+				memDC.SetTextColor(RGB(0, 0, 0));
+				memDC.SetBkMode(TRANSPARENT);
+				memDC.TextOutW(rect.Width() / 2, rect.Height() / 2, str);
+				//MessageBox(_T("白方胜利！"));
+			}
+			else if (this->game.getAxes()->Win(Chess::BLACK))
+			{
+				// 画胜利线
+				CString str = _T("黑方胜利！");
+				memDC.SetTextColor(RGB(0, 0, 0));
+				memDC.SetBkMode(TRANSPARENT);
+				memDC.TextOutW(rect.Width() / 2, rect.Height() / 2, str);
+
+			}
 		}
+
+		// 显示时间
+		CString timeStr;
+		timeStr.Format(_T("%d s"), this->game.time);
+		memDC.SetTextColor(RGB(0, 0, 0));
+		memDC.SetBkMode(TRANSPARENT);
+		memDC.TextOutW(rect.Width() * 12 / 17, rect.Height() / 22, timeStr);
+
+		// 显示turn
+		CString turnStr;
+		if (this->game.getAxes()->turn == Chess::WHITE)
+		{
+			turnStr = _T("白方");
+		}
+		else
+		{
+			turnStr = _T("黑方");
+		}
+		memDC.SetTextColor(RGB(0, 0, 0));
+		memDC.SetBkMode(TRANSPARENT);
+		memDC.TextOutW(rect.Width() * 12 / 16, rect.Height() / 13, turnStr);
+
 
 		// 将内存 DC 的内容拷贝到屏幕 DC
 		clientDC.BitBlt(0, 0, rect.Width(), rect.Height(), &memDC, 0, 0, SRCCOPY);
 
 		// 清理
 		memDC.SelectObject(oldBitmap);
+
+		// 删除 GDI 对象
+		memBitmap.DeleteObject();
+		memDC.DeleteDC();
+
+		CDialogEx::OnPaint();
 	}
 }
 
@@ -234,27 +285,61 @@ HCURSOR CCChessDlg::OnQueryDragIcon()
 
 void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	if (CCChessDlg::game.get_gameStatus() == MainGame::PLAYING)
+	// 获取窗口大小
+	CRect rect;
+	GetClientRect(&rect);
+	if (CCChessDlg::game.click_start(point, rect) && CCChessDlg::game.get_gameStatus() != MainGame::PLAYING)
+	{
+		CCChessDlg::game.InitGame();
+		CCChessDlg::game.set_gameStatus(MainGame::PLAYING);
+		CCChessDlg::game.time = 0;
+		Invalidate();
+	}
+
+
+	if ((CCChessDlg::game.get_gameStatus() == MainGame::PLAYING) && (CCChessDlg::game.getAxes()->turn == Chess::WHITE))
 	{
 		if (!CCChessDlg::game.getAxes()->InAxes(point))
 		{
 			return;
 		}
 		point = Axes::TransToGrid(point);
-		CCChessDlg::game.getAxes()->AddChess(point.x, point.y, Chess::WHITE);
+		if (CCChessDlg::game.getAxes()->AddChess(point.x, point.y, Chess::WHITE)) {
+			CCChessDlg::game.getAxes()->turn = Chess::BLACK;
+		}
 
 		// 胜利
 		if (CCChessDlg::game.getAxes()->Win(Chess::WHITE))
 		{
-			// 显示胜利信息
-			//AfxMessageBox(_T("白方胜利！"));
+			// 显示胜利信息, 询问是否重新开始
+			AfxMessageBox(_T("白方胜利！"), MB_OK | MB_ICONINFORMATION);
+
 			CCChessDlg::game.set_gameStatus(MainGame::END);
 
 			// 重新开始
 			//CCChessDlg::game.InitGame();
 			//Invalidate();
 		}
+
+		// 电脑下棋
+		if (this->game.get_gameStatus() == MainGame::PLAYING && this->game.getAxes()->turn == Chess::BLACK)
+		{
+			this->game.getAxes()->ComputerAddChess();
+			this->game.getAxes()->turn = Chess::WHITE;
+
+			// 胜利
+			if (CCChessDlg::game.getAxes()->Win(Chess::BLACK))
+			{
+				// 显示胜利信息, 询问是否重新开始
+				AfxMessageBox(_T("黑方胜利！"), MB_OK | MB_ICONINFORMATION);
+				CCChessDlg::game.set_gameStatus(MainGame::END);
+			}
+		}
+		
 	}
+	// 强制窗口重绘
+	Invalidate();
+	UpdateWindow();
 
 	//AfxMessageBox(_T("Hello, World!"));
 
@@ -272,4 +357,39 @@ CRect CCChessDlg::Get_Window_Rect()
 BOOL CCChessDlg::OnEraseBkgnd(CDC* pDC)
 {
 	return TRUE; // 不擦除背景, 以便重绘背景
+}
+
+void CCChessDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	//AfxMessageBox(_T("Hello, World!"));
+	//this->game.time++;
+	switch (nIDEvent)
+	{
+	case 1:
+		if (this->game.get_gameStatus() == MainGame::PLAYING)
+		{
+			this->game.time++;
+		}
+
+
+		Invalidate();
+		//AfxMessageBox(_T("Hello, World!"));
+		break;
+	case 2:
+
+		//Invalidate();
+		break;
+	default:
+		break;
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CCChessDlg::OnBnClickedButtonRegret()
+{
+	this->game.getAxes()->Regret();
+	Invalidate();
 }

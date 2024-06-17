@@ -58,5 +58,5 @@ void Chess::show(CDC* pDC)
 	bmp_chess.DeleteObject();
 	dc.DeleteDC();
 
-	Chess::chess_num++;
+	//Chess::chess_num++;
 }
