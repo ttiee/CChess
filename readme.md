@@ -6,7 +6,35 @@
 
 #### 2. 项目结构
 
-懒得写。。。看代码吧
+~~懒得写。。。看代码吧~~ 还是tree一下吧
+
+```shell
+│  .gitattributes
+│  .gitignore
+│  Axes.cpp   # 坐标类
+│  Axes.h
+│  CChess.cpp   # 棋子类
+│  CChess.h
+│  CChess.rc
+│  CChessDlg.cpp  # 对话框类
+│  CChessDlg.h
+│  Chess.cpp    # 五子棋类
+│  Chess.h
+│  framework.h
+│  MainGame.cpp # 主游戏
+│  MainGame.h
+│  pch.cpp
+│  pch.h
+│  readme.md
+│  resource.h
+│  SoundManager.cpp # 音效管理类
+│  SoundManager.h
+│  targetver.h
+│
+├─res # 资源文件夹
+├─sound # 音频文件夹
+
+```
 
 #### 3. 开发时间
 
