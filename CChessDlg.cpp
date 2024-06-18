@@ -83,6 +83,7 @@ BEGIN_MESSAGE_MAP(CCChessDlg, CDialogEx)
 	ON_BN_CLICKED(IDD_BUTTON_REGRET, &CCChessDlg::OnBnClickedButtonRegret)
 	ON_NOTIFY(NM_THEMECHANGED, IDC_COMBO_COLOR, &CCChessDlg::OnNMThemeChangedComboColor)
 	ON_CBN_CLOSEUP(IDC_COMBO_COLOR, &CCChessDlg::OnCbnCloseupComboColor)
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 
@@ -506,4 +507,23 @@ void CAboutDlg::OnBnClickedButtonSource()
 	// 跳转到源代码页面
 	ShellExecute(NULL, _T("open"), _T("https://github.com/ttiee/CChess.git"), NULL, NULL, SW_SHOWNORMAL);
 
+}
+
+
+void CCChessDlg::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// 鼠标悬停范围，改变鼠标样式
+	CRect rect;
+	GetClientRect(&rect);
+	if (CCChessDlg::game.click_start(point, rect) || CCChessDlg::game.click_about(point, rect))
+	{
+		SetCursor(LoadCursor(NULL, IDC_HAND));
+	}
+	else
+	{
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+	}
+	
+
+	CDialogEx::OnMouseMove(nFlags, point);
 }

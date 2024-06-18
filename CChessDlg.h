@@ -43,4 +43,5 @@ public:
 	afx_msg void OnBnClickedButtonRegret();
 	afx_msg void OnNMThemeChangedComboColor(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnCbnCloseupComboColor();
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 };
