@@ -329,6 +329,52 @@ void CCChessDlg::OnPaint()
 		memDC.SetBkMode(TRANSPARENT);
 		memDC.TextOutW(rect.Width() * 12 / 16, rect.Height() / 13, turnStr);
 
+		// 绘制 IDD_BUTTON_REGRET 按钮控件
+		CWnd* pButton = GetDlgItem(IDD_BUTTON_REGRET);
+		if (pButton)
+		{
+			CRect buttonRect;
+			pButton->GetWindowRect(&buttonRect);
+			ScreenToClient(&buttonRect);
+
+			CDC buttonDC;
+			buttonDC.CreateCompatibleDC(&clientDC);
+			CBitmap buttonBitmap;
+			buttonBitmap.CreateCompatibleBitmap(&clientDC, buttonRect.Width(), buttonRect.Height());
+			CBitmap* pOldButtonBmp = buttonDC.SelectObject(&buttonBitmap);
+
+			pButton->Print(&buttonDC, PRF_CLIENT | PRF_ERASEBKGND);
+
+			memDC.BitBlt(buttonRect.left, buttonRect.top, buttonRect.Width(), buttonRect.Height(), &buttonDC, 0, 0, SRCCOPY);
+
+			buttonDC.SelectObject(pOldButtonBmp);
+			buttonBitmap.DeleteObject();
+			buttonDC.DeleteDC();
+		}
+
+		// 绘制 IDC_COMBO_COLOR 组合框控件
+		CWnd* pComboBox = GetDlgItem(IDC_COMBO_COLOR);
+		if (pComboBox)
+		{
+			CRect comboRect;
+			pComboBox->GetWindowRect(&comboRect);
+			ScreenToClient(&comboRect);
+
+			CDC comboDC;
+			comboDC.CreateCompatibleDC(&clientDC);
+			CBitmap comboBitmap;
+			comboBitmap.CreateCompatibleBitmap(&clientDC, comboRect.Width(), comboRect.Height());
+			CBitmap* pOldComboBmp = comboDC.SelectObject(&comboBitmap);
+
+			pComboBox->Print(&comboDC, PRF_CLIENT | PRF_ERASEBKGND);
+
+			memDC.BitBlt(comboRect.left, comboRect.top, comboRect.Width(), comboRect.Height(), &comboDC, 0, 0, SRCCOPY);
+
+			comboDC.SelectObject(pOldComboBmp);
+			comboBitmap.DeleteObject();
+			comboDC.DeleteDC();
+		}
+
 		// 将内存 DC 的内容拷贝到屏幕 DC
 		clientDC.BitBlt(0, 0, rect.Width(), rect.Height(), &memDC, 0, 0, SRCCOPY);
 
