@@ -37,13 +37,15 @@
 
 #### 3. 开发时间
 
-3 Commits on Jun 18, 2024
+小修补 5 Commits on Jun 18, 2024
 
-4 Commits on Jun 17, 2024
+完善基础功能 4 Commits on Jun 17, 2024
+
+正常绘图 1 Commits on Jun 16, 2024
 
 1 Commits on Jun 13, 2024
 
-4 days ago 添加 `.gitattributes` 和 `.gitignore`。
+添加 `.gitattributes` 和 `.gitignore` Jun 13, 2024 
 
 大部分功能开发时间 `Jun 17, 2024` `Jun 18, 2024`。
 
