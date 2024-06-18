@@ -81,7 +81,7 @@ BEGIN_MESSAGE_MAP(CCChessDlg, CDialogEx)
 	ON_WM_ERASEBKGND() // 擦除背景
 	//ON_BN_CLICKED(IDC_BUTTON1, &CCChessDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDD_BUTTON_REGRET, &CCChessDlg::OnBnClickedButtonRegret)
-	ON_NOTIFY(NM_THEMECHANGED, IDC_COMBO_COLOR, &CCChessDlg::OnNMThemeChangedComboColor)
+	//ON_NOTIFY(NM_THEMECHANGED, IDC_COMBO_COLOR, &CCChessDlg::OnNMThemeChangedComboColor)
 	ON_CBN_CLOSEUP(IDC_COMBO_COLOR, &CCChessDlg::OnCbnCloseupComboColor)
 	ON_WM_MOUSEMOVE()
 	ON_WM_SIZE()
@@ -241,8 +241,7 @@ void CCChessDlg::OnPaint()
 	}
 	else
 	{
-		// 创建内存 DC
-		CClientDC clientDC(this);
+		CPaintDC clientDC(this);
 		CRect rect;
 		GetClientRect(&rect);
 
@@ -283,11 +282,6 @@ void CCChessDlg::OnPaint()
 			if (this->game.getAxes()->Win(Chess::WHITE))
 			{
 				// 画胜利线
-				/*CString str = _T("白方胜利！");
-				memDC.SetTextColor(RGB(0, 0, 0));
-				memDC.SetBkMode(TRANSPARENT);
-				memDC.TextOutW(rect.Width() / 2, rect.Height() / 2, str);*/
-				//MessageBox(_T("白方胜利！"));
 				CBitmap bmp_win;
 				bmp_win.LoadBitmap(IDB_BITMAP_WIN);
 				CDC winDC;
@@ -335,14 +329,11 @@ void CCChessDlg::OnPaint()
 		memDC.SetBkMode(TRANSPARENT);
 		memDC.TextOutW(rect.Width() * 12 / 16, rect.Height() / 13, turnStr);
 
-
 		// 将内存 DC 的内容拷贝到屏幕 DC
 		clientDC.BitBlt(0, 0, rect.Width(), rect.Height(), &memDC, 0, 0, SRCCOPY);
 
 		// 清理
 		memDC.SelectObject(oldBitmap);
-
-		// 删除 GDI 对象
 		memBitmap.DeleteObject();
 		memDC.DeleteDC();
 
@@ -487,13 +478,6 @@ void CCChessDlg::OnBnClickedButtonRegret()
 }
 
 
-void CCChessDlg::OnNMThemeChangedComboColor(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	// 切换颜色
-	*pResult = 0;
-}
-
-
 void CCChessDlg::OnCbnCloseupComboColor()
 {
 	// 切换坐标系颜色
@@ -567,6 +551,8 @@ void CCChessDlg::OnSize(UINT nType, int cx, int cy)
 		pWnd2->MoveWindow(&rect);
 	}
 
+	Invalidate();
+	UpdateWindow();
 }
 
 
