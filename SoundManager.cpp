@@ -43,3 +43,9 @@ void SoundManager::PlayRegretSound()
 {
 	PlaySoundFile(L"sound\\regret.wav");
 }
+
+// 播放关闭的音效
+void SoundManager::PlayCloseSound()
+{
+	PlaySoundFile(L"sound\\down.wav");
+}

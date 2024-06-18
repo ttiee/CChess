@@ -84,6 +84,8 @@ BEGIN_MESSAGE_MAP(CCChessDlg, CDialogEx)
 	ON_NOTIFY(NM_THEMECHANGED, IDC_COMBO_COLOR, &CCChessDlg::OnNMThemeChangedComboColor)
 	ON_CBN_CLOSEUP(IDC_COMBO_COLOR, &CCChessDlg::OnCbnCloseupComboColor)
 	ON_WM_MOUSEMOVE()
+	ON_WM_SIZE()
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -530,4 +532,53 @@ void CCChessDlg::OnMouseMove(UINT nFlags, CPoint point)
 
 
 	CDialogEx::OnMouseMove(nFlags, point);
+}
+
+
+void CCChessDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+
+	// 调整button大小
+	CWnd* pWnd = GetDlgItem(IDD_BUTTON_REGRET);
+	if (pWnd)
+	{
+		CRect rect;
+		pWnd->GetWindowRect(&rect);
+		ScreenToClient(&rect);
+		rect.left = cx / 50;
+		rect.right = cx / 5;
+		rect.top = cy / 3;
+		rect.bottom = cy * 2 / 5;
+		pWnd->MoveWindow(&rect);
+	}
+
+	// 调整combo box大小
+	CWnd* pWnd2 = GetDlgItem(IDC_COMBO_COLOR);
+	if (pWnd2)
+	{
+		CRect rect;
+		pWnd2->GetWindowRect(&rect);
+		ScreenToClient(&rect);
+		rect.left = cx / 50;
+		rect.right = cx / 5;
+		rect.top = cy * 11 / 26;
+		rect.bottom = cy * 13 / 25;
+		pWnd2->MoveWindow(&rect);
+	}
+
+}
+
+
+void CCChessDlg::OnClose()
+{
+	SoundManager::PlayCloseSound();
+
+	timeKillEvent(1);	// 关闭定时器
+	//timeKillEvent(2);	// 关闭定时器
+
+	MessageBox(_T("感谢游玩！"), _T("CChess"), MB_OK | MB_ICONINFORMATION);
+
+
+	CDialogEx::OnClose();
 }

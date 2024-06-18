@@ -16,6 +16,7 @@ public:
     static void PlayDownSound();
     static void PlayWrongSound();
     static void PlayRegretSound();
+    static void PlayCloseSound();
 
 private:
     // 通用播放函数
