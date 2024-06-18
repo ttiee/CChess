@@ -396,6 +396,7 @@ void Axes::Regret()
 		chesses.pop_back();
 		chesses.pop_back();
 		Chess::chess_num -= 2;
+		SoundManager::PlayRegretSound();
 	}
 	else if (chesses.size() == 1)
 	{
@@ -403,23 +404,11 @@ void Axes::Regret()
 		chesses.pop_back();
 		Chess::chess_num -= 1;
 		chesseboard[chesses[chesses.size() - 1]->GetX()][chesses[chesses.size() - 1]->GetY()] = Chess::NONE;
+		SoundManager::PlayRegretSound();
 	}
 	else {
+		SoundManager::PlayWrongSound();
 		MessageBox(NULL, _T("无法悔棋"), _T("提示"), MB_OK);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

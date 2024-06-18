@@ -356,10 +356,14 @@ HCURSOR CCChessDlg::OnQueryDragIcon()
 }
 
 void CCChessDlg::OnLButtonUp(UINT nFlags, CPoint point)
+
 {
 	// 获取窗口大小
 	CRect rect;
 	GetClientRect(&rect);
+
+
+	// 判断是否点击开始按钮
 	if (CCChessDlg::game.click_start(point, rect) && CCChessDlg::game.get_gameStatus() != MainGame::PLAYING)
 	{
 		CCChessDlg::game.InitGame();
@@ -475,9 +479,9 @@ void CCChessDlg::OnTimer(UINT_PTR nIDEvent)
 
 void CCChessDlg::OnBnClickedButtonRegret()
 {
+	
 	this->game.getAxes()->Regret();
 	Invalidate();
-	SoundManager::PlayRegretSound();
 }
 
 
@@ -523,7 +527,7 @@ void CCChessDlg::OnMouseMove(UINT nFlags, CPoint point)
 	{
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
 	}
-	
+
 
 	CDialogEx::OnMouseMove(nFlags, point);
 }
