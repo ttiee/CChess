@@ -8,8 +8,8 @@
 
 int Axes::Window_x = CCChessDlg::Window_Width * 0.25 / 1;
 int Axes::Window_y = CCChessDlg::Window_Height * 0.1 / 1;
-int Axes::GridWidth = CCChessDlg::Window_Height / 23;
 int Axes::GridNum = 15;
+int Axes::GridWidth = CCChessDlg::Window_Height * 15 / (23 * Axes::GridNum);
 Chess::COLOR Axes::turn = Chess::WHITE;
 
 
@@ -27,7 +27,7 @@ void Axes::show(CDC* pDC, CRect rect)
 	////CCChessDlg::Get_Window_Rect(&rect);
 	this->Window_x = rect.Width() * 0.25 / 1;
 	this->Window_y = rect.Height() * 0.1 / 1;
-	this->GridWidth = (((rect.Width()) < (rect.Height())) ? (rect.Width()) : (rect.Height())) / 23;
+	this->GridWidth = (((rect.Width()) < (rect.Height())) ? (rect.Width()) : (rect.Height())) * 15 / (23 * Axes::GridNum);
 
 	DrawAxes(pDC);
 }
@@ -299,48 +299,44 @@ void Axes::clear()
 // 靠近中心点的位置优先级高
 void Axes::ComputerAddChess()
 {
-	int x = 0, y = 0;
-	float maxScore = -1.0;
-	float score[15][15] = { 0.0 };
-	const int center = GridNum / 2;
+	int x = 0, y = 0; // 最佳落子坐标
+	float maxScore = -1.0; // 最高得分
+	std::vector<std::vector<float>> score(GridNum, std::vector<float>(GridNum, 0.0)); // 每个位置的得分
+	const int center = GridNum / 2; // 棋盘中心
 
-	// 棋形评分函数
+	// 形状评估函数
 	auto evaluateShape = [&](int countBlack, int countWhite, int emptySpaces, bool isCurrent) -> float {
-		if (countWhite == 4) return isCurrent ? 10000.0 : 9000.0; // 阻止白子成五或成五
-		if (countBlack == 4) return isCurrent ? 9000.0 : 8000.0; // 成五
-		if (countWhite == 3 && emptySpaces == 1) return isCurrent ? 800.0 : 700.0; // 阻止白子活四
-		if (countBlack == 3 && emptySpaces == 1) return isCurrent ? 700.0 : 600.0; // 黑子活四
-		if (countWhite == 3 && emptySpaces > 1) return isCurrent ? 600.0 : 500.0; // 阻止白子跳活四
-		if (countBlack == 3 && emptySpaces > 1) return isCurrent ? 500.0 : 400.0; // 黑子跳活四
-		if (countWhite == 2 && emptySpaces == 1) return isCurrent ? 60.0 : 50.0; // 阻止白子活三
-		if (countBlack == 2 && emptySpaces == 1) return isCurrent ? 50.0 : 40.0; // 黑子活三
-		if (countWhite == 2 && emptySpaces > 1) return isCurrent ? 40.0 : 30.0; // 阻止白子跳活三
-		if (countBlack == 2 && emptySpaces > 1) return isCurrent ? 30.0 : 20.0; // 黑子跳活三
-		if (countWhite == 1) return isCurrent ? 10.0 : 5.0; // 阻止白子活二
-		if (countBlack == 1) return isCurrent ? 5.0 : 3.0; // 黑子活二
+		if (countWhite == 4) return isCurrent ? 10000.0 : 9000.0; // 阻止白棋成五或成五
+		if (countBlack == 4) return isCurrent ? 9000.0 : 8000.0; // 成黑棋五
+		if (countWhite == 3 && emptySpaces == 1) return isCurrent ? 800.0 : 700.0; // 阻止白棋四
+		if (countBlack == 3 && emptySpaces == 1) return isCurrent ? 700.0 : 600.0; // 黑棋四
+		if (countWhite == 3 && emptySpaces > 1) return isCurrent ? 600.0 : 500.0; // 阻止白棋跳四
+		if (countBlack == 3 && emptySpaces > 1) return isCurrent ? 500.0 : 400.0; // 黑棋跳四
+		if (countWhite == 2 && emptySpaces == 1) return isCurrent ? 60.0 : 50.0; // 阻止白棋三
+		if (countBlack == 2 && emptySpaces == 1) return isCurrent ? 50.0 : 40.0; // 黑棋三
+		if (countWhite == 2 && emptySpaces > 1) return isCurrent ? 40.0 : 30.0; // 阻止白棋跳三
+		if (countBlack == 2 && emptySpaces > 1) return isCurrent ? 30.0 : 20.0; // 黑棋跳三
+		if (countWhite == 1) return isCurrent ? 10.0 : 5.0; // 阻止白棋二
+		if (countBlack == 1) return isCurrent ? 5.0 : 3.0; // 黑棋二
 
 		return 0.0;
 		};
 
-	// 综合评分函数
+	// 位置评估函数
 	auto evaluatePosition = [&](int i, int j, bool isCurrent) -> float {
 		float totalScore = 0.0;
 
 		// 评估当前(i, j)点在8个方向上的得分
-		for (int dx = -1; dx <= 1; dx++)
-		{
-			for (int dy = -1; dy <= 1; dy++)
-			{
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dy = -1; dy <= 1; dy++) {
 				if (dx == 0 && dy == 0) continue;
 
 				int countBlack = 0, countWhite = 0, emptySpaces = 0;
-				for (int k = -4; k <= 4; k++)
-				{
+				for (int k = -4; k <= 4; k++) {
 					int ni = i + k * dx;
 					int nj = j + k * dy;
 
-					if (ni >= 0 && ni < GridNum && nj >= 0 && nj < GridNum)
-					{
+					if (ni >= 0 && ni < GridNum && nj >= 0 && nj < GridNum) {
 						if (chesseboard[ni][nj] == Chess::BLACK) countBlack++;
 						else if (chesseboard[ni][nj] == Chess::WHITE) countWhite++;
 						else emptySpaces++;
@@ -359,19 +355,20 @@ void Axes::ComputerAddChess()
 		};
 
 	// 遍历所有位置，计算每个位置的得分
-	for (int i = 0; i < GridNum; i++)
-	{
-		for (int j = 0; j < GridNum; j++)
-		{
+	for (int i = 0; i < GridNum; i++) {
+		for (int j = 0; j < GridNum; j++) {
 			if (chesseboard[i][j] != Chess::NONE) continue;
 
+			// 计算当前玩家的得分
 			float currentScore = evaluatePosition(i, j, true);
+			// 计算对手的得分
 			float opponentScore = evaluatePosition(i, j, false);
 
+			// 总得分是当前玩家和对手得分之和
 			score[i][j] = currentScore + opponentScore;
 
-			if (score[i][j] > maxScore)
-			{
+			// 如果当前得分高于最大得分，更新最佳落子点
+			if (score[i][j] > maxScore) {
 				maxScore = score[i][j];
 				x = i;
 				y = j;
@@ -381,8 +378,10 @@ void Axes::ComputerAddChess()
 
 	// 将黑棋落子在得分最高的位置
 	AddChess(x, y, Chess::BLACK);
-	turn = Chess::WHITE;
+	turn = Chess::WHITE; // 切换到白棋
 }
+
+
 
 
 void Axes::Regret()

@@ -86,6 +86,7 @@ BEGIN_MESSAGE_MAP(CCChessDlg, CDialogEx)
 	ON_WM_MOUSEMOVE()
 	ON_WM_SIZE()
 	ON_WM_CLOSE()
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_NUM, &CCChessDlg::OnDeltaposSpinNum)
 END_MESSAGE_MAP()
 
 
@@ -315,6 +316,13 @@ void CCChessDlg::OnPaint()
 		memDC.SetBkMode(TRANSPARENT);
 		memDC.TextOutW(rect.Width() * 12 / 17, rect.Height() / 22, timeStr);
 
+		// 显示GridNum
+		CString gridNumStr;
+		gridNumStr.Format(_T("%d"), this->game.getAxes()->GridNum);
+		memDC.SetTextColor(RGB(0, 0, 0));
+		memDC.SetBkMode(TRANSPARENT);
+		memDC.TextOutW(rect.Width() * 0.87, rect.Height() / 6, gridNumStr);
+
 		// 显示turn
 		CString turnStr;
 		if (this->game.getAxes()->turn == Chess::WHITE)
@@ -373,6 +381,28 @@ void CCChessDlg::OnPaint()
 			comboDC.SelectObject(pOldComboBmp);
 			comboBitmap.DeleteObject();
 			comboDC.DeleteDC();
+		}
+		// 绘制 IDC_SPIN_NUM 控件
+		CWnd* pSpin = GetDlgItem(IDC_SPIN_NUM);
+		if (pSpin)
+		{
+			CRect spinRect;
+			pSpin->GetWindowRect(&spinRect);
+			ScreenToClient(&spinRect);
+
+			CDC spinDC;
+			spinDC.CreateCompatibleDC(&clientDC);
+			CBitmap spinBitmap;
+			spinBitmap.CreateCompatibleBitmap(&clientDC, spinRect.Width(), spinRect.Height());
+			CBitmap* pOldSpinBmp = spinDC.SelectObject(&spinBitmap);
+
+			pSpin->Print(&spinDC, PRF_CLIENT | PRF_ERASEBKGND);
+
+			memDC.BitBlt(spinRect.left, spinRect.top, spinRect.Width(), spinRect.Height(), &spinDC, 0, 0, SRCCOPY);
+
+			spinDC.SelectObject(pOldSpinBmp);
+			spinBitmap.DeleteObject();
+			spinDC.DeleteDC();
 		}
 
 		// 将内存 DC 的内容拷贝到屏幕 DC
@@ -596,6 +626,19 @@ void CCChessDlg::OnSize(UINT nType, int cx, int cy)
 		rect.bottom = cy * 13 / 25;
 		pWnd2->MoveWindow(&rect);
 	}
+	// 调整spin控件大小
+	CWnd* pWnd3 = GetDlgItem(IDC_SPIN_NUM);
+	if (pWnd3)
+	{
+		CRect rect;
+		pWnd3->GetWindowRect(&rect);
+		ScreenToClient(&rect);
+		rect.left = cx * 0.86;
+		rect.right = cx * 0.9;
+		rect.top = cy * 0.2;
+		rect.bottom = cy * 0.3;
+		pWnd3->MoveWindow(&rect);
+	}
 
 	Invalidate();
 	UpdateWindow();
@@ -613,4 +656,28 @@ void CCChessDlg::OnClose()
 
 
 	CDialogEx::OnClose();
+}
+
+
+void CCChessDlg::OnDeltaposSpinNum(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	// 调整Axex的GridNum
+	if (pNMUpDown->iDelta < 0)	// 向上滚动
+	{
+		if (this->game.getAxes()->GridNum < 15)
+		{
+			this->game.getAxes()->GridNum++;
+		}
+	}
+	else
+	{
+		if (this->game.getAxes()->GridNum > 5)
+		{
+			this->game.getAxes()->GridNum--;
+		}
+	}
+	Invalidate();
+
+	*pResult = 0;
 }

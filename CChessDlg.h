@@ -45,4 +45,5 @@ public:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnClose();
+	afx_msg void OnDeltaposSpinNum(NMHDR* pNMHDR, LRESULT* pResult);
 };
